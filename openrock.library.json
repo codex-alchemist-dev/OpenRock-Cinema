@@ -1,0 +1,9 @@
+{
+  "openrockVersion": 1,
+  "kind": "library",
+  "name": "@openrock/cinema",
+  "version": "1.0.0",
+  "entry": "src/register.js",
+  "provides": { "api": "src/register.js", "hookNamespaces": ["cinema"] },
+  "scripts": { "runtime": true }
+}
