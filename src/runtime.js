@@ -11,11 +11,14 @@
 
 const { createPlayer } = require("./player.js");
 const { createDefaultOps } = require("./ops/index.js");
+const { resolveRelative } = require("./coords.js");
 
 function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, fmbe, scenes, spawnScene, emit, ops: extraOps = {}, onError, onFinish, warn }) {
     const { world, system } = bedrock;
+    // every op sees plain numbers: `~` coordinates are resolved against the session origin first
+    const withOrigin = table => Object.fromEntries(Object.entries(table).map(([name, handler]) => [name, (ctx, args, event) => handler(ctx, resolveRelative(args, ctx.env.origin), event)]));
     const player = createPlayer({
-        ops: { ...createDefaultOps(bedrock), ...extraOps },
+        ops: withOrigin({ ...createDefaultOps(bedrock), ...extraOps }),
         onError: (e, info) => (onError ? onError(e, info) : console.warn(`[cinema] ${info?.cutsceneId ?? "?"}: ${e?.message ?? e}`)),
     });
     const sessions = new Map();   // player id -> { handle, players, id, onFinish }
@@ -24,7 +27,7 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
 
     const idOf = p => p.id;
 
-    function bindCast(timeline, players, dimension) {
+    function bindCast(timeline, players, dimension, origin) {
         const cast = {};
         const spawned = [];
         for (const c of timeline.cast) {
@@ -33,7 +36,8 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
                 if (!p) throw new Error(`cutscene "${timeline.id}": cast "${c.name}" needs player #${c.index} but only ${players.length} given`);
                 cast[c.name] = p;
             } else {
-                const at = c.at ? { x: c.at[0], y: c.at[1], z: c.at[2] } : players[0].location;
+                const abs = c.at ? resolveRelative(c.at, origin) : null;
+                const at = abs ? { x: abs[0], y: abs[1], z: abs[2] } : players[0].location;
                 const e = dimension.spawnEntity(c.entityType, at);
                 spawned.push(e);
                 cast[c.name] = e;
@@ -82,10 +86,12 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
             for (const c of timeline.cast) if (c.kind === "player" && !players[c.index]) throw new Error(`cinema: cutscene "${id}": cast "${c.name}" needs player #${c.index} but only ${players.length} given`);
             subscribe();
 
-            const env = { players, cast: {}, functions, hooks, fmbe, scenes, spawnScene, emit, warn };
+            const l = players[0].location;
+            const origin = { x: Math.floor(l.x), y: Math.floor(l.y), z: Math.floor(l.z) };
+            const env = { players, origin, cast: {}, functions, hooks, fmbe, scenes, spawnScene, emit, warn };
             const handle = player.start(timeline, env, {
                 setup: ctx => {
-                    const { cast, spawned } = bindCast(timeline, players, players[0].dimension);
+                    const { cast, spawned } = bindCast(timeline, players, players[0].dimension, origin);
                     env.cast = cast;
                     ctx.onCleanup(() => { for (const e of spawned) { try { if (e.isValid) e.remove(); } catch (err) { /* gone */ } } });
                 },

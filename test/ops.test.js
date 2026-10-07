@@ -84,6 +84,26 @@ test("player timers: ctx.after fires once, ctx.every honours interval/duration, 
     assert.strictEqual(log2.length, 3);
 });
 
+// ---- relative coordinates ----
+test("~ coordinates resolve against the player's floored start position, for ops and cast alike", () => {
+    const f = createFake();
+    const p = f.makePlayer("A");
+    p.location = { x: 100.7, y: 64.2, z: -20.5 };
+    const rt = createCinemaRuntime({ bedrock: f.bedrock, cutscenes: compile(wrap(`cast mira = entity "t:mira" at (~2, ~, ~)
+lock cinematic
+camera cut to (~, ~3, ~-4) look_at mira
+particles "p" at (5, ~1, ~) count 1
+wait 1t
+unlock`)) });
+    rt.play("c", [p]);
+    assert.deepStrictEqual(f.entities[0].location, { x: 102, y: 64, z: -21 });
+    const cut = calls(p, "camera.setCamera")[0][2];
+    assert.deepStrictEqual(cut.location, { x: 100, y: 67, z: -25 });
+    assert.deepStrictEqual(cut.facingLocation, { x: 102, y: 64, z: -21 });
+    assert.deepStrictEqual(f.dimension.particles[0][1], { x: 5, y: 65, z: -21 });
+    rt.stopAll();
+});
+
 // ---- lock ----
 test("lock cinematic turns camera+movement off, unlock restores; lock position keeps the camera on", () => {
     const a = play(wrap("lock cinematic\nwait 1s\nunlock"));
