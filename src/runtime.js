@@ -27,7 +27,7 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
 
     const idOf = p => p.id;
 
-    function bindCast(timeline, players, dimension, origin) {
+    function bindCast(timeline, players, dimension, origin, bound = {}) {
         const cast = {};
         const spawned = [];
         for (const c of timeline.cast) {
@@ -35,6 +35,8 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
                 const p = players[c.index];
                 if (!p) throw new Error(`cutscene "${timeline.id}": cast "${c.name}" needs player #${c.index} but only ${players.length} given`);
                 cast[c.name] = p;
+            } else if (bound[c.name]) {
+                cast[c.name] = bound[c.name];   // the game supplied this cast member (an entity that already exists): not spawned, not removed
             } else {
                 const abs = c.at ? resolveRelative(c.at, origin) : null;
                 const at = abs ? { x: abs[0], y: abs[1], z: abs[2] } : players[0].location;
@@ -75,7 +77,8 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
         /**
          * @param {string} id cutscene id
          * @param {object[]} players the players who see it (cast `player 0` is the first)
-         * @param {{onFinish?: (info: {cutsceneId: string, state: string, players: object[]}) => void}} [opts]
+         * @param {{onFinish?: (info: {cutsceneId: string, state: string, players: object[]}) => void, cast?: Object<string, object>}} [opts]
+         *   cast: existing entities to use for `cast name = entity ...` members instead of spawning new ones (they are left alone afterwards)
          */
         play(id, players, opts = {}) {
             const timeline = cutscenes[id];
@@ -91,7 +94,7 @@ function createCinemaRuntime({ bedrock, cutscenes, functions = {}, hooks = {}, f
             const env = { players, origin, cast: {}, functions, hooks, fmbe, scenes, spawnScene, emit, warn };
             const handle = player.start(timeline, env, {
                 setup: ctx => {
-                    const { cast, spawned } = bindCast(timeline, players, players[0].dimension, origin);
+                    const { cast, spawned } = bindCast(timeline, players, players[0].dimension, origin, opts.cast);
                     env.cast = cast;
                     ctx.onCleanup(() => { for (const e of spawned) { try { if (e.isValid) e.remove(); } catch (err) { /* gone */ } } });
                 },

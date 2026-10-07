@@ -351,6 +351,19 @@ test("display verbs fail clearly without an fmbe runtime, and display scene driv
     assert.match(c.errors[0], /no such scene/);
 });
 
+test("play({ cast }) binds an existing entity to a cast name: it is used as is and never spawned or removed", () => {
+    const f = createFake();
+    const p = f.makePlayer("A");
+    const mine = f.dimension.spawnEntity("t:mine", { x: 5, y: 64, z: 5 });
+    f.entities.length = 0;
+    const rt = createCinemaRuntime({ bedrock: f.bedrock, cutscenes: compile(wrap('cast mira = entity "t:mira" at (0, 0, 0)\nlock cinematic\nmira.emote "hello"\nwait 1s\nunlock')) });
+    rt.play("c", [p], { cast: { mira: mine } });
+    f.tick(25);
+    assert.deepStrictEqual(mine.calls, [["event", "hello"]]);
+    assert.strictEqual(f.entities.length, 0, "nothing was spawned for the bound name");
+    assert.strictEqual(mine.isValid, true, "and the bound entity survives the cutscene");
+});
+
 // ---- runtime ----
 test("runtime: unknown id, double play, onFinish info, skip runs `on skip`, leave and death clean up", () => {
     const f = createFake();
