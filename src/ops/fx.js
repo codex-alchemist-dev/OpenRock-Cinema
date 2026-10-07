@@ -35,13 +35,13 @@ function createFxOps(bedrock) {
         },
         weather(ctx, args) { dimensionOf(ctx).setWeather(bedrock.WeatherType?.[weather[args.pos[0]]] ?? weather[args.pos[0]]); },
         time(ctx, args) { bedrock.world.setTimeOfDay(args.pos[0]); },
-        clear_effects(ctx) { eachPlayer(ctx, p => { for (const e of p.getEffects()) p.removeEffect(e.typeId); }); },
+        clearEffects(ctx) { eachPlayer(ctx, p => { for (const e of p.getEffects()) p.removeEffect(e.typeId); }); },
         /** `level` is the in-game level (1 = I), i.e. amplifier level-1. */
-        give_effect(ctx, args) {
+        giveEffect(ctx, args) {
             const duration = args.for ?? 600;
             eachPlayer(ctx, p => p.addEffect(args.pos[0], duration, { amplifier: Math.max(0, (args.level ?? 1) - 1) }));
         },
-        teleport_player(ctx, args) { eachPlayer(ctx, p => p.teleport(vec(args.pos[0]))); },
+        teleportPlayer(ctx, args) { eachPlayer(ctx, p => p.teleport(vec(args.pos[0]))); },
         heal(ctx) { eachPlayer(ctx, p => p.getComponent("minecraft:health").resetToMaxValue()); },
     };
 }

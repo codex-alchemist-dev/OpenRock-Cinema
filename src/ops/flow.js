@@ -22,8 +22,8 @@ function createFlowOps() {
             fn(ctx.env, ctx.env.players);
         },
         emit(ctx, args) { need(ctx.env.emit, "env.emit")(args.pos[0], { players: ctx.env.players }); },
-        mark_seen(ctx, args) { const f = need(ctx.env.hooks?.markSeen, "hooks.markSeen"); eachPlayer(ctx, p => f(p, args.pos[0])); },
-        set_flag(ctx, args) { const f = need(ctx.env.hooks?.setFlag, "hooks.setFlag"); eachPlayer(ctx, p => f(p, args.pos[0])); },
+        markSeen(ctx, args) { const f = need(ctx.env.hooks?.markSeen, "hooks.markSeen"); eachPlayer(ctx, p => f(p, args.pos[0])); },
+        setFlag(ctx, args) { const f = need(ctx.env.hooks?.setFlag, "hooks.setFlag"); eachPlayer(ctx, p => f(p, args.pos[0])); },
     };
 }
 

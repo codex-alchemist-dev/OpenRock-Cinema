@@ -91,7 +91,7 @@ test("~ coordinates resolve against the player's floored start position, for ops
     p.location = { x: 100.7, y: 64.2, z: -20.5 };
     const rt = createCinemaRuntime({ bedrock: f.bedrock, cutscenes: compile(wrap(`cast mira = entity "t:mira" at (~2, ~, ~)
 lock cinematic
-camera cut to (~, ~3, ~-4) look_at mira
+camera cut to (~, ~3, ~-4) lookAt mira
 particles "p" at (5, ~1, ~) count 1
 wait 1t
 unlock`)) });
@@ -141,13 +141,13 @@ test("fade out holds black until fade in; cleanup cancels any fade", () => {
 });
 
 // ---- camera ----
-test("camera cut / move / look_at / pan_up / dolly / fov / shake send exact Bedrock options", () => {
+test("camera cut / move / lookAt / panUp / dolly / fov / shake send exact Bedrock options", () => {
     const a = play(wrap(`cast mira = entity "t:mira" at (10, 64, 10)
 lock cinematic
-camera cut to (1, 70, 2) look_at mira fov 60
+camera cut to (1, 70, 2) lookAt mira fov 60
 camera move to (5, 70, 2) over 3s ease inOutSine
-camera look_at (0, 64, 0) over 1s
-camera pan_up over 0.5s ease out
+camera lookAt (0, 64, 0) over 1s
+camera panUp over 0.5s ease out
 camera dolly by (0, 0, 4) over 2s
 camera fov 90 over 1s ease in
 camera shake strength 9 for 2s
@@ -216,9 +216,9 @@ sound "ui.toast"
 title "Chapter 1" subtitle "Dawn" for 3s fade 0.5s
 weather thunder
 time 18000
-give_effect "slowness" for 5s level 3
-clear_effects
-teleport_player (7, 8, 9)
+giveEffect "slowness" for 5s level 3
+clearEffects
+teleportPlayer (7, 8, 9)
 heal
 wait 3s`));
     a.f.tick(110);
@@ -238,16 +238,16 @@ wait 3s`));
 });
 
 // ---- flow / hooks ----
-test("call / emit / mark_seen / set_flag route to the game; a missing handler is an error", () => {
+test("call / emit / markSeen / setFlag route to the game; a missing handler is an error", () => {
     const seen = [];
     const a = play(wrap(`call "boom"
 emit "scene_done"
-mark_seen "c"
-set_flag "met_mira"
+markSeen "c"
+setFlag "met_mira"
 wait 1t`), { runtime: { functions: { boom: (env, players) => seen.push(["boom", players.length]) }, emit: (n, d) => seen.push(["emit", n, d.players.length]), hooks: { markSeen: (p, id) => seen.push(["seen", p.name, id]), setFlag: (p, f) => seen.push(["flag", f]) } } });
     a.f.tick(3);
     assert.deepStrictEqual(seen, [["boom", 1], ["emit", "scene_done", 1], ["seen", "A", "c"], ["flag", "met_mira"]]);
-    const b = play(wrap("mark_seen \"c\"\nwait 1t"));
+    const b = play(wrap("markSeen \"c\"\nwait 1t"));
     assert.match(b.errors[0], /hooks\.markSeen is not provided/);
 });
 

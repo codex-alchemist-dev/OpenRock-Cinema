@@ -2,7 +2,7 @@
 // rotation or a point to face, optionally eased by the CLIENT (easeOptions), so a 5-second move costs one call. Only
 // follow and orbit need per-tick updates (their path is not a straight ease) and use ctx.every.
 //
-// The runtime tracks the last pose it asked for (ctx.state.cam) so relative ops (dolly, pan_up, look_at keeping position)
+// The runtime tracks the last pose it asked for (ctx.state.cam) so relative ops (dolly, pan_up, lookAt keeping position)
 // have something to start from. Everything is undone on cleanup: camera cleared, shake stopped, fov reset.
 "use strict";
 
@@ -51,18 +51,18 @@ function createCameraOps(bedrock) {
     return {
         "camera.cut"(ctx, args) {
             stopTickers(ctx);
-            send(ctx, { location: vec(args.to), look: args.look_at ? locationOf(ctx, args.look_at) : null });
+            send(ctx, { location: vec(args.to), look: args.lookAt ? locationOf(ctx, args.lookAt) : null });
             if (args.fov !== undefined) eachPlayer(ctx, p => p.camera.setFov({ fov: args.fov }));
         },
         "camera.move"(ctx, args) {
             stopTickers(ctx);
-            send(ctx, { location: vec(args.to), look: args.look_at ? locationOf(ctx, args.look_at) : (pose(ctx).facing ?? null), ticks: args.over, ease: args.ease });
+            send(ctx, { location: vec(args.to), look: args.lookAt ? locationOf(ctx, args.lookAt) : (pose(ctx).facing ?? null), ticks: args.over, ease: args.ease });
         },
-        "camera.look_at"(ctx, args) {
+        "camera.lookAt"(ctx, args) {
             stopTickers(ctx);
             send(ctx, { look: locationOf(ctx, args.pos[0]), ticks: args.over, ease: args.ease });
         },
-        "camera.pan_up"(ctx, args) {
+        "camera.panUp"(ctx, args) {
             stopTickers(ctx);
             send(ctx, { rotation: { x: -90, y: pose(ctx).rotation.y }, ticks: args.over, ease: args.ease });
         },
