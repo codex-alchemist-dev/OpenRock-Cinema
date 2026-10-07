@@ -1,7 +1,7 @@
 {
   "name": "@openrock/cinema",
   "version": "1.0.0",
-  "description": "Crystal Cinema runtime: plays compiled .cinema timelines with guaranteed cleanup, skip, and multi-session isolation. Bedrock access is injected via op handlers.",
+  "description": "Crystal Cinema runtime: plays compiled .cinema timelines with guaranteed cleanup. Real Bedrock handlers for every verb (camera, input locks, fx, FMBE display entities, actors), injected game hooks for policy.",
   "license": "MPL-2.0",
   "private": true,
   "main": "src/register.js"

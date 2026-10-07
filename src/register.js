@@ -1,15 +1,11 @@
-// @openrock/cinema - runtime player for compiled Crystal Cinema timelines.
-// The language/compiler lives in OpenRock core (src/cinemaDsl/); this library
-// is what runs in-world. Bedrock-facing op handlers are supplied by the mod
-// (or by default handler packs) and injected into createPlayer().
+// @openrock/cinema - plays compiled .cinema timelines (content.cinemaDsl) with guaranteed cleanup.
+//   createPlayer          the pure scheduler (no Bedrock): sessions, skip, error isolation, per-tick timers
+//   createDefaultOps      the real Bedrock handlers for every verb (camera, lock, fx, FMBE displays, actors, ...)
+//   createCinemaRuntime   binds timelines to players and drives them (cast spawning, ticking, leave/death cleanup)
 "use strict";
 
 const { createPlayer } = require("./player.js");
+const { createDefaultOps } = require("./ops/index.js");
+const { createCinemaRuntime } = require("./runtime.js");
 
-const api = { createPlayer };
-
-function register() {
-    return { api };
-}
-
-module.exports = Object.assign(register, api);
+module.exports = { createPlayer, createDefaultOps, createCinemaRuntime };
